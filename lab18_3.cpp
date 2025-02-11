@@ -4,12 +4,15 @@
 #include<vector>
 #include<cstdlib>
 #include<iomanip>
+#include<sstream>
 
 using namespace std;
 
 struct student{
-
-    //Define struct student with four member (name ,id , gender, gpa);
+	string name;
+	int id;
+	char gender;
+	double gpa;
     
 };
 
@@ -20,11 +23,11 @@ struct course{
 	vector<student *> student_list;
 };
 
-student * findstudent(vector<student> allstudents,int key){ //There is something wrong in this line.
+student * findstudent(vector<student> &allstudents,int key){ 
 	for(unsigned int i = 0; i < allstudents.size(); i++){
 		if(allstudents[i].id  == key) return &allstudents[i];
 	}
-	return 0;
+	return nullptr;
 }
 
 void printreport(vector<course> allcourses){
@@ -62,15 +65,25 @@ int main(){
 	string textline;
 	
 	while(getline(student_file,textline)){
-		student s; 
-		
-		//Use sscanf() to split the values in textline and assign those values to the members of struct s;
-                char name[100];
-		sscanf(textline.c_str(),"%[^,],%d,%c,%f",name,&s.id,&s.gender,&s.gpa);
-	        s.name = name;
-		allstudents.push_back(s); 		
+		student s;
+        stringstream ss(textline);
+        string gpa_str;
+        
+        getline(ss, s.name, ',');
+        string id_str;
+        getline(ss, id_str, ',');
+        s.id = stoi(id_str);
+        
+        string gender_str;
+        getline(ss, gender_str, ',');
+        s.gender = gender_str[0];
+
+        getline(ss, gpa_str, ',');
+        s.gpa = stof(gpa_str);
+
+        allstudents.push_back(s);  
 	}
-	
+	int count = 0;
 	int state = 1;
 	while(getline(course_file,textline)){
 		if(state == 1){
@@ -85,17 +98,17 @@ int main(){
 			if(textline == "> Students"){
 				state = 3;
 			}else{
-			
-			    //Append (push_back) textline to lecture_list[] of the recently added course in allcourses[];
-			    
+				allcourses[count].lecture_list.push_back(textline);
 			}			
 		}else{
 			if(textline == "---------------------------------------"){
 				state = 1;
+				count++;
 			}else{
 				student *p = findstudent(allstudents,atof(textline.c_str()));
-				
-				//Append (push_back) p to student_list of the recently added course in allcourses[];
+				if(p != nullptr){
+					allcourses[count].student_list.push_back(p);
+				}
 				
 			}
 		}
